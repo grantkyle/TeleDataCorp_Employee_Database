@@ -1,0 +1,26 @@
+{
+  "name": "TeleDataCorp_Employee_Database",
+  "version": "1.0.0",
+  "description": "",
+  "main": "employee_database.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grantkyle/TeleDataCorp_Employee_Database.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grantkyle/TeleDataCorp_Employee_Database/issues"
+  },
+  "homepage": "https://github.com/grantkyle/TeleDataCorp_Employee_Database#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^7.1.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {}
+}

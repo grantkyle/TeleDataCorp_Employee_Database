@@ -262,14 +262,15 @@ function updateEmployeeRole() {
                 message: "What is the employee's new title?",
                 choices: titleList
             }
-            ]).then(function (input) {
-                connection.query(`INSERT INTO role (title) VALUE("${input.updateTitle}")`, function (err, res) {
-                    if (err) throw err;
-
-                })
-                start();
+        ]).then(function (input) {
+            connection.query(`INSERT INTO role (title) VALUES("${input.updateTitle}")`, function (err, res) {
+                if (err) throw err;
+                
             })
-
+            start();
+        })
+        console.log(updateTitle)
+        
         })
     })
 };

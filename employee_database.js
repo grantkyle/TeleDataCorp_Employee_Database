@@ -1,7 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 require("console.table")
-let roleList = [];
+let titleList = [];
+let managerList = [];
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -24,8 +25,8 @@ function start() {
                 name: "options",
                 type: "list",
                 message: "What would you like to do?",
-                choices: ["View All Employees", "View All Employees by Department", "View All Employees by Manager",
-                    "Add Employee", "Remove Employee", "Update Employee Role", "Update Employee Manager", "Exit"]
+                choices: ["View All Employees", "View Departments", "View Employees by Manager", "View Roles",
+                    "Add Employee", "Remove Employee", "Add Role", "Update Employee Role", "Exit"]
             }
         )
         .then(function (answer) {
@@ -33,28 +34,36 @@ function start() {
             switch (answer.options) {
                 case "View All Employees": viewAllEmployees()
                     break;
-                case "View All Employees by Department": viewEmployeesByDepartment();
+                case "View Departments": viewDepartments();
                     break;
-                case "View All Employees by Manager": viewEmployeesByManager();
+                case "View Employees by Manager": viewEmployeesByManager();
+                    break;
+                case "View Roles": viewRoles();
                     break;
                 case "Add Employee": addEmployee();
                     break;
                 case "Remove Employee": removeEmployee();
                     break;
+                case "Add Role": addRole();
+                    break;
                 case "Update Employee Role": updateEmployeeRole();
                     break;
-                case "Update Employee Manager": updateEmployeeManager();
-                    break;
                 default: connection.end();
-                    console.log("Exit process");
                     break;
             }
         });
 }
 // View all Employees
 function viewAllEmployees() {
-    console.log("view employees")
-    connection.query("SELECT * FROM department",
+    // console.log("view employees")
+    connection.query(`SELECT employee.id,employee.first_name,employee.last_name 
+    ,role.title,role.salary ,department.name department,
+    concat(employee2.first_name," ", employee2.last_name) manager
+    FROM employee 
+    LEFT JOIN role on employee.role_id=role.id
+    LEFT JOIN employee employee2 on employee.manager_id=employee2.id
+    LEFT JOIN department on department.id=role.department_id
+    `,
         (err, data) => {
             console.log("err", err)
             console.table(data)
@@ -62,48 +71,19 @@ function viewAllEmployees() {
         })
 };
 
-// View Employees by Department
-function viewEmployeesByDepartment() {
-    console.log("view employees by department")
-    connection.query(
-        "SELECT NAME FROM department", (err, data) => {
-            const deptNames = []
-            data.forEach(item => {
-                deptNames.push(item.NAME)
-            })
-            // console.log(data)
-            inquirer.prompt({
-                type: "list",
-                choices: deptNames,
-                name: "Department",
-                message:
-                    "Choose a Department"
-            })
-                .then(function (answer) {
-                    let choice = ''
-                    //   console.log(answer)
-                    switch (answer.Department) {
-                        case "Management": choice = 1;
-                            break;
-                        case "Cubicle Rats": choice = 2;
-                            break;
-                        case "Karens": choice = 3;
-                            break;
-                        case "Toilet Cleaners": choice = 4;
-                            break;
-                    }
-                    connection.query(`SELECT * FROM employee WHERE role_id = ${choice}`, (err, data) => {
-                        // console.log("err",err)
-                        console.table(data)
-                        start()
-                    })
-                })
-        })
-};
+// View Departments
 
+function viewDepartments() {
+    connection.query("SELECT name FROM department", function (err,res) {
+        if (err) throw err;
+        console.table(res)
+    })
+
+    start()
+}
 // View Employees by Manager
 function viewEmployeesByManager() {
-    console.log("view employees by manager")
+    // console.log("view employees by manager")
     connection.query("SELECT * FROM employee WHERE role_id = 1", (err, data) => {
         // console.log(data);
         const mgmtNames = []
@@ -135,36 +115,129 @@ function viewEmployeesByManager() {
                     start()
                 })
             })
-
-        // console.log(answer)
-
-
     })
 };
 
+// View Roles
+function viewRoles() {
+    connection.query("SELECT title FROM role", function (err,res) {
+        if (err) throw err;
+        console.table(res)
+    })
+
+    start()
+}
+//     console.log("View employees by Role")
+//     connection.query(
+//         "SELECT NAME FROM department", (err, data) => {
+//             const roleNames = []
+//             data.forEach(item => {
+//                 roleNames.push(item.NAME)
+//             })
+//             // console.log(data)
+//             inquirer.prompt({
+//                 type: "list",
+//                 choices: roleNames,
+//                 name: "Roles",
+//                 message:
+//                     "Choose a Role"
+//             })
+//                 .then(function (answer) {
+//                     let choice = ''
+//                     //   console.log(answer)
+//                     switch (answer.Roles) {
+//                         case "CEO": choice = 1;
+//                             break;
+//                         case "Executive Assistant to the CEO": choice = 2;
+//                             break;
+//                         case "Administrative Supervisor": choice = 3;
+//                             break;
+//                         case "Account Executive": choice = 4;
+//                             break;
+//                     }
+//                     connection.query(`SELECT * FROM employee WHERE role_id = ${choice}`, (err, data) => {
+//                         // console.log("err",err)
+//                         console.table(data)
+//                         start()
+//                     })
+//                 })
+//         })
+// };
+
 // Add Employee to Database
+
+function managerOption() {
+    return new Promise((resolve, reject) => {
+        connection.query("SELECT * FROM employee WHERE manager_id IS NOT NULL", function (err, data) {
+            if (err) throw err;
+            resolve(data);
+        });
+    });
+}
+
+function roleOption() {
+    return new Promise((resolve, reject) => {
+        connection.query("SELECT * FROM role", function (err, data) {
+            if (err) throw err;
+            resolve(data);
+        });
+    })
+}
+
 function addEmployee() {
-    // inquirer
-    //     .prompt([
-    //         {
-    //             name: "firstName",
-    //             type: "input",
-    //             message: "What is the first name of the employee you want to add?"
-    //         },
-    //         {
-    //             name: "lastName",
-    //             type: "input",
-    //             message: "What is the last name of the employee you want to add?"
-    //         },
-    //     {
-    //             name: "role",
-    //             type: "list",
-    //             message: "What is the role of the employee you want to add?",
-    //             choice: "options"
-    //         }
-    //     ])
-    console.log("add employee")
-};
+    // console.log("add employee")
+
+    roleOption().then(function (titles) {
+        titleList = titles.map(role => role.title);
+
+        // console.log(titles);
+
+        managerOption().then(function (manager) {
+            //console.log(manager);
+            managerList = manager.map(item => item.first_name + " " + item.last_name);
+
+            inquirer
+                .prompt([
+                    {
+                        name: "firstName",
+                        type: "input",
+                        message: "What is the employee's first name?"
+                    },
+                    {
+                        name: "lastName",
+                        type: "input",
+                        message: "What is the employee's last name?"
+
+                    },
+                    {
+                        name: "role",
+                        type: "list",
+                        message: "What is the employee's role?",
+                        choices: titleList
+                    },
+                    {
+                        name: "manager",
+                        type: "list",
+                        message: "Who is the employee manager?",
+                        choices: managerList
+                    }])
+                .then(function (input) {
+
+                    const mySeelectedRole = titles.find(item => item.title === input.role);
+                    const mySelectedManager = manager.find(item => (item.first_name + " " + item.last_name) === input.manager);
+                    console.log(mySelectedManager.manager_id)
+                    connection.query(`INSERT INTO employee(first_name, last_name, role_id,manager_id) VALUES ("${input.firstName}", "${input.lastName}", ${mySeelectedRole.id}, "${mySelectedManager.id}")`,
+                        function (err, res) {
+                            if (err) throw err;
+                        }
+                    );
+                    start();
+                });
+        });
+    });
+
+}
+
 
 // Remove Employee from Database
 function removeEmployee() {

@@ -183,10 +183,10 @@ function addEmployee() {
                     }])
                 .then(function (input) {
 
-                    const mySeelectedRole = titles.find(item => item.title === input.role);
+                    const mySelectedRole = titles.find(item => item.title === input.role);
                     const mySelectedManager = manager.find(item => (item.first_name + " " + item.last_name) === input.manager);
                     console.log(mySelectedManager.manager_id)
-                    connection.query(`INSERT INTO employee(first_name, last_name, role_id,manager_id) VALUES ("${input.firstName}", "${input.lastName}", ${mySeelectedRole.id}, "${mySelectedManager.id}")`,
+                    connection.query(`INSERT INTO employee(first_name, last_name, role_id,manager_id) VALUES ("${input.firstName}", "${input.lastName}", ${mySelectedRole.id}, "${mySelectedManager.id}")`,
                         function (err, res) {
                             if (err) throw err;
                         }
@@ -247,6 +247,7 @@ function updateEmployeeRole() {
 
     employeeChoose().then(function (employees) {
         employeeList = employees.map(employee => employee.first_name)
+        
         roleOption().then(function (titles) {
             titleList = titles.map(role => role.title);
 
@@ -265,12 +266,11 @@ function updateEmployeeRole() {
         ]).then(function (input) {
             connection.query(`INSERT INTO role (title) VALUES("${input.updateTitle}")`, function (err, res) {
                 if (err) throw err;
+              //  console.log(updateTitle)
                 
             })
             start();
         })
-        console.log(updateTitle)
-        
         })
     })
 };

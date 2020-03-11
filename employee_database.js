@@ -74,7 +74,7 @@ function viewAllEmployees() {
 // View Departments
 
 function viewDepartments() {
-    connection.query("SELECT name FROM department", function (err,res) {
+    connection.query("SELECT name FROM department", function (err, res) {
         if (err) throw err;
         console.table(res)
     })
@@ -120,7 +120,7 @@ function viewEmployeesByManager() {
 
 // View Roles
 function viewRoles() {
-    connection.query("SELECT title FROM role", function (err,res) {
+    connection.query("SELECT title FROM role", function (err, res) {
         if (err) throw err;
         console.table(res)
     })
@@ -153,7 +153,7 @@ function addEmployee() {
         titleList = titles.map(role => role.title);
 
         managerOption().then(function (manager) {
-            
+
             managerList = manager.map(item => item.first_name + " " + item.last_name);
 
             inquirer
@@ -205,13 +205,13 @@ function addDepartment() {
         type: "input",
         message: "What department would you like to add?"
     }])
-    .then(function(input){
-        connection.query(`INSERT INTO department (name) VALUES("${input.department}")`,function(err,res){
-            if (err) throw err;
-            console.table(viewDepartments());
-            start();
+        .then(function (input) {
+            connection.query(`INSERT INTO department (name) VALUES("${input.department}")`, function (err, res) {
+                if (err) throw err;
+                console.table(viewDepartments());
+                start();
+            })
         })
-    })
     // console.log("add department")
 };
 
@@ -222,21 +222,54 @@ function addRole() {
         type: "input",
         message: "What role would you like to add?"
     }])
-    .then(function(input){
-        connection.query(`INSERT INTO role (title) VALUES("${input.role}")`,function(err,res){
-            if (err) throw err;
-            console.table(viewRoles());
-            start();
+        .then(function (input) {
+            connection.query(`INSERT INTO role (title) VALUES("${input.role}")`, function (err, res) {
+                if (err) throw err;
+                console.table(viewRoles());
+                start();
+            })
         })
-    })
 }
 
 // Update Employee Role
-function updateEmployeeRole() {
-    console.log("update employee role")
-};
+function employeeChoose() {
+    return new Promise((resolve, reject) => {
+        connection.query(`SELECT first_name, last_name FROM employee`, function (err, data) {
+            if (err) throw err;
+            // console.log(data);
+            resolve(data);
+        });
+    });
+}
 
-// End Process
-function end() {
-    console.log("end connection")
+function updateEmployeeRole() {
+    let employeeList = [];
+
+    employeeChoose().then(function (employees) {
+        employeeList = employees.map(employee => employee.first_name)
+        roleOption().then(function (titles) {
+            titleList = titles.map(role => role.title);
+
+            inquirer.prompt([{
+                name: "pickEmployee",
+                type: "list",
+                message: "Which employee do you want to update?",
+                choices: employeeList
+            },
+            {
+                name: "updateTitle",
+                type: "list",
+                message: "What is the employee's new title?",
+                choices: titleList
+            }
+            ]).then(function (input) {
+                connection.query(`INSERT INTO role (title) VALUE("${input.updateTitle}")`, function (err, res) {
+                    if (err) throw err;
+
+                })
+                start();
+            })
+
+        })
+    })
 };

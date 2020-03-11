@@ -26,7 +26,7 @@ function start() {
                 type: "list",
                 message: "What would you like to do?",
                 choices: ["View All Employees", "View Departments", "View Employees by Manager", "View Roles",
-                    "Add Employee", "Remove Employee", "Add Role", "Update Employee Role", "Exit"]
+                    "Add Employee", "Add Department", "Add Role", "Update Employee Role", "Exit"]
             }
         )
         .then(function (answer) {
@@ -42,7 +42,7 @@ function start() {
                     break;
                 case "Add Employee": addEmployee();
                     break;
-                case "Remove Employee": removeEmployee();
+                case "Add Department": addDepartment();
                     break;
                 case "Add Role": addRole();
                     break;
@@ -127,45 +127,8 @@ function viewRoles() {
 
     start()
 }
-//     console.log("View employees by Role")
-//     connection.query(
-//         "SELECT NAME FROM department", (err, data) => {
-//             const roleNames = []
-//             data.forEach(item => {
-//                 roleNames.push(item.NAME)
-//             })
-//             // console.log(data)
-//             inquirer.prompt({
-//                 type: "list",
-//                 choices: roleNames,
-//                 name: "Roles",
-//                 message:
-//                     "Choose a Role"
-//             })
-//                 .then(function (answer) {
-//                     let choice = ''
-//                     //   console.log(answer)
-//                     switch (answer.Roles) {
-//                         case "CEO": choice = 1;
-//                             break;
-//                         case "Executive Assistant to the CEO": choice = 2;
-//                             break;
-//                         case "Administrative Supervisor": choice = 3;
-//                             break;
-//                         case "Account Executive": choice = 4;
-//                             break;
-//                     }
-//                     connection.query(`SELECT * FROM employee WHERE role_id = ${choice}`, (err, data) => {
-//                         // console.log("err",err)
-//                         console.table(data)
-//                         start()
-//                     })
-//                 })
-//         })
-// };
 
 // Add Employee to Database
-
 function managerOption() {
     return new Promise((resolve, reject) => {
         connection.query("SELECT * FROM employee WHERE manager_id IS NOT NULL", function (err, data) {
@@ -185,15 +148,12 @@ function roleOption() {
 }
 
 function addEmployee() {
-    // console.log("add employee")
 
     roleOption().then(function (titles) {
         titleList = titles.map(role => role.title);
 
-        // console.log(titles);
-
         managerOption().then(function (manager) {
-            //console.log(manager);
+            
             managerList = manager.map(item => item.first_name + " " + item.last_name);
 
             inquirer
@@ -238,20 +198,42 @@ function addEmployee() {
 
 }
 
-
-// Remove Employee from Database
-function removeEmployee() {
-    console.log("remove employee")
+// Add Department
+function addDepartment() {
+    inquirer.prompt([{
+        name: "department",
+        type: "input",
+        message: "What department would you like to add?"
+    }])
+    .then(function(input){
+        connection.query(`INSERT INTO department (name) VALUES("${input.department}")`,function(err,res){
+            if (err) throw err;
+            console.table(viewDepartments());
+            start();
+        })
+    })
+    // console.log("add department")
 };
+
+// Add Role
+function addRole() {
+    inquirer.prompt([{
+        name: "role",
+        type: "input",
+        message: "What role would you like to add?"
+    }])
+    .then(function(input){
+        connection.query(`INSERT INTO role (title) VALUES("${input.role}")`,function(err,res){
+            if (err) throw err;
+            console.table(viewRoles());
+            start();
+        })
+    })
+}
 
 // Update Employee Role
 function updateEmployeeRole() {
     console.log("update employee role")
-};
-
-// Update Employee Manager
-function updateEmployeeManager() {
-    console.log("update employee manager")
 };
 
 // End Process

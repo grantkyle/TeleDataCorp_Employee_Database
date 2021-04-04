@@ -2,7 +2,7 @@
 
 Dependencies
 
-In the internal workspace's command terminal, and all seperately, you will want to type "npm" then:
+In the internal workspace's command terminal, and all seperately, you will want to type "npm install" then:
 
 - inquirer
 - mysql
